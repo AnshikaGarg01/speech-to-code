@@ -11,24 +11,37 @@ import { URI } from 'vscode-uri';
 })
 export class MonacoEditorComponent implements OnInit {
 
-  languageId = 'java';
+  languageId = 'python';
   editorOptions = {
     theme: 'vs-dark'
   }
+  workspaceIndex = Math.round(Math.random() * 1000);
   model: NgxEditorModel = {
     value: this.getCode(),
     language: this.languageId,
-    uri: URI.file('/usr/src/app/Solution.java')
+    uri: URI.file(`/usr/src/codes/${this.workspaceIndex}/Solution.py`)
   };
   authToken = 'R3YKZFKBVi';
+  meditor = null
   constructor() { }
 
   ngOnInit() {
+    setTimeout(() => {
+      const modelUri = URI.file(`/usr/src/codes/${this.workspaceIndex}/Solution.py`)
+      this.meditor.getModel(modelUri)?.dispose();
+      const model = monaco.editor.createModel(
+        this.getCode(),
+        this.languageId,
+        URI.file(`/usr/src/codes/${this.workspaceIndex}/Solution.py`)
+      )
+      this.meditor.setModel(model)
+    }, 1000);
   }
 
   monacoOnInit(editor) {
     // install Monaco language client services
-    MonacoServices.install(editor);
+    MonacoServices.install(editor, { rootUri: '/usr/src/codes' });
+    this.meditor = editor
     // create the web socket
     const url = this.createUrl();
     const webSocket = this.createWebSocket(url);
@@ -38,6 +51,7 @@ export class MonacoEditorComponent implements OnInit {
       onConnection: (connection: MessageConnection) => {
         // create and start the language client
         const languageClient = this.createLanguageClient(connection);
+        console.log("CLIENT:", languageClient)
         const disposable = languageClient.start();
         connection.onClose(() => disposable.dispose());
       }
@@ -47,11 +61,13 @@ export class MonacoEditorComponent implements OnInit {
   public createUrl(): string {
     switch (this.languageId) {
       case 'cpp':
-        return 'ws://18.139.1.158:3000/cpp';
+        return 'ws://localhost:3003/cpp';
       case 'python':
-        return 'ws://18.139.1.158:3000/python';
+        // return 'ws://a056ff91160074e4ca8b8620ba1b0bfb-314635842.ap-southeast-1.elb.amazonaws.com/python';
+        return 'ws://localhost:3002/python';
       case 'java':
-        return `ws://localhost:3000/java?token=${this.authToken}`;
+        // return `ws://localhost:3002/java?token=${this.authToken}`;
+        return `ws://localhost:3002/java?token=${this.authToken}`;
     }
   }
 
@@ -62,8 +78,8 @@ export class MonacoEditorComponent implements OnInit {
         // use a language id as a document selector
         documentSelector: [this.languageId],
         workspaceFolder: {
-          uri: URI.file('/usr/src/app'),
-          name: '/usr/src/app',
+          uri: URI.file(`/usr/src/codes`),
+          name: 'workspace',
           index: 0
         },
         // disable the default error handler
@@ -87,18 +103,51 @@ export class MonacoEditorComponent implements OnInit {
       minReconnectionDelay: 1000,
       reconnectionDelayGrowFactor: 1.3,
       connectionTimeout: 10000,
-      maxRetries: Infinity,
+      maxRetries: 2,
       debug: false
     };
     return new ReconnectingWebSocket.default(socketUrl, [], socketOptions);
   }
 
   getCode() {
-    return `import java.util.Random;
-    public class Solution {
-        public static void main (String[] args){
-        }
-    }`
+    // return `#include <bits/stdc++.h> 
+
+    // void printPattern(int n) {
+    //   // Write your code here.
+    // }`
+    //   return `class Solution {
+    //     public static void main(String[] args) {
+    //         System.out.println("Welcome to Codestudio Online Compiler!!"); 
+    //     }
+    // }`
+    return `from os import *
+    from sys import *
+    from collections import *
+    from math import *
+
+    from os import *
+    from sys import *
+    from collections import *
+    from math import *
+
+    """***************************************************************
+
+        Following is the class structure of the LinkedListNode class:
+
+    class Node:
+            def __init__(self, data):
+    self.data = data
+    self.next = None
+
+
+      ***************************************************************** """
+
+
+    def reverseLinkedList(head):
+        # Write your code here.
+
+      pass
+      `
   }
 
 }

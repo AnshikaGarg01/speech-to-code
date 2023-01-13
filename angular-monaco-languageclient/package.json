@@ -19,7 +19,7 @@
     "@angular/platform-browser": "~9.0.6",
     "@angular/platform-browser-dynamic": "~9.0.6",
     "@angular/router": "~9.0.6",
-    "monaco-languageclient": "^0.10.2",
+    "monaco-languageclient": "0.13.0",
     "ngx-monaco-editor": "^8.1.1",
     "reconnecting-websocket": "^4.2.0",
     "rxjs": "~6.5.4",
