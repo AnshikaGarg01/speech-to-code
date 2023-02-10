@@ -1,2 +1,6 @@
 <ngx-monaco-editor class="monaco-editor" [options]="editorOptions" [model]="model" [(ngModel)]="code"
   (onInit)="monacoOnInit($event)"></ngx-monaco-editor>
+<app-speech-to-text
+  (sendTranscript)="setText($event)"
+>
+</app-speech-to-text>

@@ -7,11 +7,13 @@ import { MonacoEditorModule } from 'ngx-monaco-editor';
 import { MonacoEditorComponent } from './monaco-editor/monaco-editor.component';
 
 import { MonacoConfig } from './monaco-editor/monaco-config';
+import { SpeechToTextComponent } from './speech-to-text/speech-to-text.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    MonacoEditorComponent
+    MonacoEditorComponent,
+    SpeechToTextComponent
   ],
   imports: [
     BrowserModule,

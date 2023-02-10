@@ -12,6 +12,7 @@ import { URI } from 'vscode-uri';
 export class MonacoEditorComponent implements OnInit {
 
   languageId = 'python';
+  translatedText: string;
   editorOptions = {
     theme: 'vs-dark'
   }
@@ -38,6 +39,9 @@ export class MonacoEditorComponent implements OnInit {
     }, 1000);
   }
 
+  setText(text: string){
+    this.meditor.trigger('keyboard', 'type', {text: text});
+  }
   monacoOnInit(editor) {
     // install Monaco language client services
     MonacoServices.install(editor, { rootUri: '/usr/src/codes' });
@@ -110,44 +114,7 @@ export class MonacoEditorComponent implements OnInit {
   }
 
   getCode() {
-    // return `#include <bits/stdc++.h> 
-
-    // void printPattern(int n) {
-    //   // Write your code here.
-    // }`
-    //   return `class Solution {
-    //     public static void main(String[] args) {
-    //         System.out.println("Welcome to Codestudio Online Compiler!!"); 
-    //     }
-    // }`
-    return `from os import *
-    from sys import *
-    from collections import *
-    from math import *
-
-    from os import *
-    from sys import *
-    from collections import *
-    from math import *
-
-    """***************************************************************
-
-        Following is the class structure of the LinkedListNode class:
-
-    class Node:
-            def __init__(self, data):
-    self.data = data
-    self.next = None
-
-
-      ***************************************************************** """
-
-
-    def reverseLinkedList(head):
-        # Write your code here.
-
-      pass
-      `
+    return ``;
   }
 
 }
