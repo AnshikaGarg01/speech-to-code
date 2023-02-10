@@ -20,14 +20,32 @@ export class SpeechToTextComponent implements AfterViewInit {
   mouseDown$: Observable<any>;
   mouseUp$: Observable<any>;
   listening = false;
+  library = {
+    "small bracket": "()",
+    "curly bracket": "{}",
+    "square bracket": '[]',
+    "angular bracket": '<>',
+    "divide": '/',
+    "division": '/',
+    "multiplication": '*',
+    "into": '*',
+    "multiply": '*',
+    "add": '+',
+    "plus": '+',
+    "minus": '-',
+    "substract": '-',
+  };
+  result = "";
+
   constructor() {
     this.recognition = new webkitSpeechRecognition();
     this.recognition.continuous = true;
     this.recognition.interimResults = true;
+
     this.recognition.onresult = (event) => {
       for (let i = event.resultIndex; i < event.results.length; i++) {
         if (event.results[i].isFinal) {
-          const input = event.results[i][0].transcript
+          const input = event.results[i][0].transcript.toLowerCase()
           this.getMatchingText(input);
         }
       }
@@ -70,8 +88,24 @@ export class SpeechToTextComponent implements AfterViewInit {
       this.updatePosition.emit({ type: bestMatch, pos: parseInt(numberPart, 10) });
       return
     }
+    if (!!this.library[input]) {
+      this.sendTranscript.emit(bestMatch);
+    }
+    Object.keys(this.library).forEach((txt) => {
+      const matchpercent = this.percentageMatch(textPart, txt);
+      console.log("MATCHED VALUES: ", matchpercent, txt, textPart)
+      if (matchpercent > minMatch) {
+        minMatch = matchpercent;
+        bestMatch = txt
+        matchFound = true
+      }
+    })
+    if (matchFound) {
+      this.library[input] = this.library[bestMatch];
+      this.sendTranscript.emit(this.library[bestMatch]);
+      return
+    }
     this.sendTranscript.emit(bestMatch);
-    return
   }
 
   private percentageMatch(str1 = '', str2 = '') {
