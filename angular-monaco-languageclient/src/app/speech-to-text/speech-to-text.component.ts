@@ -1,4 +1,6 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Input, EventEmitter, Output, ViewChild } from '@angular/core';
+import { fromEvent, Observable } from "rxjs";
+import { delay, takeUntil, tap } from "rxjs/operators";
 
 declare const webkitSpeechRecognition: any;
 
@@ -7,13 +9,17 @@ declare const webkitSpeechRecognition: any;
   templateUrl: './speech-to-text.component.html',
   styleUrls: ['./speech-to-text.component.scss']
 })
-export class SpeechToTextComponent {
+export class SpeechToTextComponent implements AfterViewInit {
   recognition: any;
   transcript = '';
-  positionLibrary = ['go to line', 'new line']
+  positionLibrary = ['go to line', 'next line']
   @Output() sendTranscript = new EventEmitter<string>();
   @Output() updatePosition = new EventEmitter();
+  @ViewChild('el', { static: false }) el: ElementRef;
 
+  mouseDown$: Observable<any>;
+  mouseUp$: Observable<any>;
+  listening = false;
   constructor() {
     this.recognition = new webkitSpeechRecognition();
     this.recognition.continuous = true;
@@ -38,7 +44,7 @@ export class SpeechToTextComponent {
 
   cleanupInput(input) {
     console.log("INPUT VALUES: ", input)
-    const numberPart = input.match(/\d+/)[0]
+    const numberPart = input.match(/\d+/) == null ? null : input.match(/\d+/)[0]
     const textPart = input.replace(/[0-9]/g, '');
     return { numberPart, textPart }
   }
@@ -62,7 +68,7 @@ export class SpeechToTextComponent {
     })
     if (matchFound) {
       console.log("UPDATING POSITION: ", parseInt(numberPart, 10))
-      this.updatePosition.emit({ updatePosition: bestMatch, pos: parseInt(numberPart, 10) });
+      this.updatePosition.emit({ type: bestMatch, pos: parseInt(numberPart, 10) });
       return
     }
     this.sendTranscript.emit(bestMatch);
@@ -92,5 +98,23 @@ export class SpeechToTextComponent {
     const bigger = Math.max(str1.length, str2.length)
     return (bigger - distance) * 100 / bigger
   };
+
+  onClick() {
+    this.mouseDown$.pipe(
+      delay(40000),
+      takeUntil(this.mouseUp$)
+    )
+      .subscribe(res => console.log('LONG CLICK'));
+  }
+  ngAfterViewInit() {
+    fromEvent(this.el.nativeElement, 'mousedown').subscribe(() => {
+      this.listening = true;
+      this.startSpeechRecognition();
+    });
+    fromEvent(this.el.nativeElement, 'mouseup').subscribe(() => {
+      this.listening = false;
+      this.stopSpeechRecognition();
+    });
+  }
 }
 

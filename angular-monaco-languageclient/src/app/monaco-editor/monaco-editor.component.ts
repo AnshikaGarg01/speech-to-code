@@ -79,11 +79,12 @@ export class MonacoEditorComponent implements OnInit {
   setPosition(data) {
     const type = data.type
     const pos = data.pos
+    this.cursorPosition = this.meditor?.getPosition().lineNumber
     console.log("SETTING POSITION: ", data)
-    if (type === 'go to position') {
+    if (type === 'go to line') {
       this.cursorPosition = pos;
     }
-    if (type === 'new line') {
+    if (type === 'next line') {
       this.cursorPosition++;
     }
     const position = { lineNumber: this.cursorPosition, column: 1 };

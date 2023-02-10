@@ -1,5 +1,2 @@
-<div>
-  <button (click)="startSpeechRecognition()">Start</button>
-  <button (click)="stopSpeechRecognition()">Stop</button>
-  <p>{{ transcript }}</p>
-</div>
+<button #el (click)="onClick()">Start speaking</button>
+<h5 *ngIf="listening">Listening</h5>
