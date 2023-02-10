@@ -11,7 +11,7 @@ import { URI } from 'vscode-uri';
 })
 export class MonacoEditorComponent implements OnInit {
 
-  languageId = 'python';
+  languageId = 'cpp';
   translatedText: string;
   editorOptions = {
     theme: 'vs-dark'
@@ -20,7 +20,7 @@ export class MonacoEditorComponent implements OnInit {
   model: NgxEditorModel = {
     value: this.getCode(),
     language: this.languageId,
-    uri: URI.file(`/usr/src/codes/${this.workspaceIndex}/Solution.py`)
+    uri: URI.file(`/usr/src/codes/${this.workspaceIndex}/Solution.cpp`)
   };
   authToken = 'R3YKZFKBVi';
   meditor = null
@@ -28,12 +28,12 @@ export class MonacoEditorComponent implements OnInit {
 
   ngOnInit() {
     setTimeout(() => {
-      const modelUri = URI.file(`/usr/src/codes/${this.workspaceIndex}/Solution.py`)
+      const modelUri = URI.file(`/usr/src/codes/${this.workspaceIndex}/Solution.cpp`)
       this.meditor.getModel(modelUri)?.dispose();
       const model = monaco.editor.createModel(
         this.getCode(),
         this.languageId,
-        URI.file(`/usr/src/codes/${this.workspaceIndex}/Solution.py`)
+        URI.file(`/usr/src/codes/${this.workspaceIndex}/Solution.cpp`)
       )
       this.meditor.setModel(model)
     }, 1000);
