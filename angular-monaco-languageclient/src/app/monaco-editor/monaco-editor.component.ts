@@ -24,6 +24,7 @@ export class MonacoEditorComponent implements OnInit {
   };
   authToken = 'R3YKZFKBVi';
   meditor = null
+  cursorPosition = 0;
   constructor() { }
 
   ngOnInit() {
@@ -39,27 +40,27 @@ export class MonacoEditorComponent implements OnInit {
     }, 1000);
   }
 
-  setText(text: string){
-    this.meditor.trigger('keyboard', 'type', {text: text});
+  setText(text: string) {
+    this.meditor.trigger('keyboard', 'type', { text: text });
   }
   monacoOnInit(editor) {
     // install Monaco language client services
     MonacoServices.install(editor, { rootUri: '/usr/src/codes' });
     this.meditor = editor
     // create the web socket
-    const url = this.createUrl();
-    const webSocket = this.createWebSocket(url);
-    // listen when the web socket is opened
-    listen({
-      webSocket,
-      onConnection: (connection: MessageConnection) => {
-        // create and start the language client
-        const languageClient = this.createLanguageClient(connection);
-        console.log("CLIENT:", languageClient)
-        const disposable = languageClient.start();
-        connection.onClose(() => disposable.dispose());
-      }
-    });
+    // const url = this.createUrl();
+    // const webSocket = this.createWebSocket(url);
+    // // listen when the web socket is opened
+    // listen({
+    //   webSocket,
+    //   onConnection: (connection: MessageConnection) => {
+    //     // create and start the language client
+    //     const languageClient = this.createLanguageClient(connection);
+    //     console.log("CLIENT:", languageClient)
+    //     const disposable = languageClient.start();
+    //     connection.onClose(() => disposable.dispose());
+    //   }
+    // });
   }
 
   public createUrl(): string {
@@ -73,6 +74,22 @@ export class MonacoEditorComponent implements OnInit {
         // return `ws://localhost:3002/java?token=${this.authToken}`;
         return `ws://localhost:3002/java?token=${this.authToken}`;
     }
+  }
+
+  setPosition(data) {
+    const type = data.type
+    const pos = data.pos
+    console.log("SETTING POSITION: ", data)
+    if (type === 'go to position') {
+      this.cursorPosition = pos;
+    }
+    if (type === 'new line') {
+      this.cursorPosition++;
+    }
+    const position = { lineNumber: this.cursorPosition, column: 1 };
+    console.log(this.meditor?.getPosition(), position)
+    this.meditor.setPosition(position);
+    this.meditor.focus();
   }
 
   public createLanguageClient(connection: MessageConnection): MonacoLanguageClient {
