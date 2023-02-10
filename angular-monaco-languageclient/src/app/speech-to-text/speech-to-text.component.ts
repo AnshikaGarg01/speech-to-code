@@ -21,11 +21,34 @@ export class SpeechToTextComponent implements AfterViewInit{
     this.recognition = new webkitSpeechRecognition();
     this.recognition.continuous = true;
     this.recognition.interimResults = true;
+
+    const library = {
+      "small bracket" : "()",
+      "curly bracket" : "{}",
+      "square bracket" : '[]',
+      "angular bracket" : '<>',
+      "divide" : '/',
+      "division" : '/',
+      "multiplication" : '*',
+      "into" : '*',
+      "multiply" : '*',
+      "add" : '+',
+      "plus" : '+',
+      "minus" : '-',
+      "substract" : '-',
+    };
+    let result = "";
+
     this.recognition.onresult = (event) => {
       for (let i = event.resultIndex; i < event.results.length; i++) {
         if (event.results[i].isFinal) {
-          this.transcript += event.results[i][0].transcript;
-          this.sendTranscript.emit(event.results[i][0].transcript);
+          this.transcript = event.results[i][0].transcript;
+          console.log("this is me:   ", this.transcript);
+
+          result = this.transcript.toLowerCase();
+          result = library[result] || result;
+
+          this.sendTranscript.emit(result);
         }
       }
     };
