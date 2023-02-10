@@ -67,7 +67,6 @@ export class SpeechToTextComponent implements AfterViewInit {
       }
     })
     if (matchFound) {
-      console.log("UPDATING POSITION: ", parseInt(numberPart, 10))
       this.updatePosition.emit({ type: bestMatch, pos: parseInt(numberPart, 10) });
       return
     }
