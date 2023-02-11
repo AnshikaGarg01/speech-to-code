@@ -40,6 +40,15 @@ export class SpeechToTextComponent implements AfterViewInit {
     "semicolon": ':',
     'tab': '\t'
   }
+
+  textToNumber = {
+    'one': 1,
+    'two': 2,
+    'three': 3,
+    'four': 4,
+    'five': 5
+  }
+
   result = "";
 
   constructor() {
@@ -71,6 +80,14 @@ export class SpeechToTextComponent implements AfterViewInit {
     const numberPart = input.match(/\d+/) == null ? null : input.match(/\d+/)[0]
     const textPart = input.replace(/[0-9]/g, '');
     return { numberPart, textPart }
+  }
+
+  directionCleanup(input) {
+    if (input.indexOf('right') > -1 || input.indexOf('left') > -1) {
+      Object.keys(this.textToNumber).forEach((txt) => {
+
+      })
+    }
   }
 
   getMatchingText(input) {
@@ -136,10 +153,10 @@ export class SpeechToTextComponent implements AfterViewInit {
       })
       if (matchFound) {
         this.librarySingleWord[textPart] = this.librarySingleWord[bestMatch]
-        this.sendTranscript.emit(this.librarySingleWord[bestMatch]);
+        this.sendTranscript.emit(this.librarySingleWord[bestMatch] + ' ');
         continue
       }
-      this.sendTranscript.emit(bestMatch);
+      this.sendTranscript.emit(bestMatch + ' ');
     }
   }
 
