@@ -25,7 +25,11 @@ export class SpeechToTextComponent implements AfterViewInit {
     "curly bracket": "{}",
     "square bracket": '[]',
     "angle bracket": '<>',
-    "new line": '\n'
+    "new line": '\n',
+    "not equals": '!=',
+    "greater than": '>',
+    "less than": '<',
+    "semi colon": ';',
   };
   librarySingleWord = {
     "divide": '/',
@@ -37,8 +41,11 @@ export class SpeechToTextComponent implements AfterViewInit {
     "plus": '+',
     "minus": '-',
     "substract": '-',
-    "semicolon": ':',
-    'tab': '\t'
+    "semicolon": ';',
+    'tab': '\t',
+    "equal": '=',
+    "equals": '=',
+    "colon": ':'
   }
 
   textToNumber = {
@@ -46,7 +53,12 @@ export class SpeechToTextComponent implements AfterViewInit {
     'two': 2,
     'three': 3,
     'four': 4,
-    'five': 5
+    'five': 5,
+    // 'one ': 1,
+    // 'two ': 2,
+    // 'three ': 3,
+    // 'four ': 4,
+    // 'five ': 5
   }
 
   result = "";
