@@ -19,8 +19,24 @@ export class MonacoEditorComponent implements OnInit {
   languageId = "cpp";
   translatedText: string;
   editorOptions = {
-    theme: "vs-dark",
-    tabSize: 2,
+    theme: 'ninjasDark',
+    automaticLayout: true,
+    readOnly: false,
+    fontSize: 14,
+    letterSpacing: 1.5,
+    cursorStyle: 'line',
+    minimap: {
+      enabled: false,
+    },
+    wordWrap: 'off',
+    autoIndent: true,
+    formatOnPaste: true,
+    formatOnType: true,
+    folding: true,
+    showUnused: true,
+    lineDecorationsWidth: 0,
+    lineNumbersMinChars: 3,
+    glyphMargin: false,
   };
   workspaceIndex = Math.round(Math.random() * 1000);
   model: NgxEditorModel = {
@@ -30,6 +46,7 @@ export class MonacoEditorComponent implements OnInit {
   };
   authToken = 'R3YKZFKBVi';
   meditor = null
+  cachePostion = null
 
   constructor() {
   }
@@ -87,6 +104,8 @@ export class MonacoEditorComponent implements OnInit {
     }
   }
 
+
+
   setPosition(data) {
     const type = data.type;
     const pos = data.pos;
@@ -100,6 +119,14 @@ export class MonacoEditorComponent implements OnInit {
     if (type === "next line") {
       lineNumber++;
       column = 0;
+    }
+    if (type === "cache position") {
+      this.cachePostion = this.meditor?.getPosition()
+      return;
+    }
+    if (type === "use cache position") {
+      lineNumber = this.cachePostion.lineNumber + 2;
+      column = this.cachePostion.column;
     }
     if (type === "previous line") {
       lineNumber--;

@@ -54,6 +54,7 @@ export class SpeechToTextComponent implements AfterViewInit {
   librarySingleWord = {
     "integer": "int",
     "space": " ",
+    "tab": "\t"
   }
 
   textToNumber = {
@@ -94,11 +95,15 @@ export class SpeechToTextComponent implements AfterViewInit {
     "plus": '+',
     "minus": '-',
     "substract": '-',
+    "back slash": "\\",
+    "forward slash": '/',
+    "dot": "."
   }
 
   codeSnippets = {
     "if": {
       code: "if(){\n",
+      beforeCode: () => { },
       action: () => {
         this.updatePosition.emit({
           type: "previous line",
@@ -114,6 +119,7 @@ export class SpeechToTextComponent implements AfterViewInit {
     },
     "for": {
       code: "for(){\n",
+      beforeCode: () => { },
       action: () => {
         this.updatePosition.emit({
           type: "previous line",
@@ -129,6 +135,7 @@ export class SpeechToTextComponent implements AfterViewInit {
     },
     "single quotes": {
       code: "''",
+      beforeCode: () => { },
       action: () => {
         this.updatePosition.emit({
           type: "left",
@@ -138,6 +145,7 @@ export class SpeechToTextComponent implements AfterViewInit {
     },
     "double quotes": {
       code: '""',
+      beforeCode: () => { },
       action: () => {
         this.updatePosition.emit({
           type: "left",
@@ -151,8 +159,22 @@ export class SpeechToTextComponent implements AfterViewInit {
     },
     "see in": {
       code: "cin >> ",
+      beforeCode: () => { },
       action: () => { },
     },
+    "include imports": {
+      code: "#include<bits/stdc++.h>\nusing namespace std;\n",
+      beforeCode: () => {
+        this.updatePosition.emit({ type: 'cache position' })
+        this.updatePosition.emit({
+          type: "go to line",
+          pos: 1
+        });
+      },
+      action: () => {
+        this.updatePosition.emit({ type: 'use cache position' })
+      }
+    }
   };
 
   constructor() {
@@ -193,16 +215,39 @@ export class SpeechToTextComponent implements AfterViewInit {
     if (input.indexOf('right') > -1 || input.indexOf('left') > -1 || input.indexOf('go to line')) {
       Object.keys(this.textToNumber).forEach((txt) => {
         input = input.replaceAll(txt, this.textToNumber[txt])
+
       })
     }
     return input
   }
 
+  removeSpace(input) {
+    input = input.replaceAll("  ", " ");
+    for (var i = 1; i < input.length; i++) {
+      var ch = input[i];
+      console.log("REPLACE CHECK: ", input[i], input[i - 1])
+      if (Object.values(this.operators).indexOf(ch) > -1) {
+        if (input[i - 1] === ' ') {
+          input = this.setCharAt(input, i - 1, "`")
+        }
+        if (i < input.length - 1 && input[i + 1] === ' ') {
+          input = this.setCharAt(input, i + 1, "`")
+        }
+      }
+    }
+    return input.replaceAll("`", "");
+  }
+
+  setCharAt(str, index, chr) {
+    if (index > str.length - 1) return str;
+    return str.substring(0, index) + chr + str.substring(index + 1);
+  }
+
   replaceOperators(input) {
     Object.keys(this.operators).forEach((op) => {
-      input = input.replace(op, this.operators[op]);
+      input = input.replaceAll(op, this.operators[op]);
     })
-    return input
+    return this.removeSpace(input)
   }
 
   getMatchingText(input) {
@@ -309,6 +354,7 @@ export class SpeechToTextComponent implements AfterViewInit {
     console.log("----", transcript);
     transcript = transcript.trim()
     if (!!this.codeSnippets[transcript]) {
+      this.codeSnippets[transcript].beforeCode()
       this.sendTranscript.emit(this.codeSnippets[transcript].code);
       this.codeSnippets[transcript].action()
       return true
@@ -348,8 +394,8 @@ export class SpeechToTextComponent implements AfterViewInit {
     //   .subscribe(res => console.log('LONG CLICK'));
   }
 
-  onKeyPress(){
-    
+  onKeyPress() {
+
   }
 
   ngAfterViewInit() {
