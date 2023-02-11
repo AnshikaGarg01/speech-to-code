@@ -53,6 +53,7 @@ export class SpeechToTextComponent implements AfterViewInit {
 
   librarySingleWord = {
     "integer": "int",
+    "space": " ",
   }
 
   textToNumber = {
@@ -125,6 +126,32 @@ export class SpeechToTextComponent implements AfterViewInit {
           pos: 2
         });
       },
+    },
+    "single quotes": {
+      code: "''",
+      action: () => {
+        this.updatePosition.emit({
+          type: "left",
+          pos: 1
+        });
+      },
+    },
+    "double quotes": {
+      code: '""',
+      action: () => {
+        this.updatePosition.emit({
+          type: "left",
+          pos: 1
+        });
+      },
+    },
+    "see out": {
+      code: "cout << ",
+      action: () => { },
+    },
+    "see in": {
+      code: "cin >> ",
+      action: () => { },
     },
   };
 
