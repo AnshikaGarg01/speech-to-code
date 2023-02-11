@@ -224,6 +224,10 @@ export class SpeechToTextComponent implements AfterViewInit {
     //   .subscribe(res => console.log('LONG CLICK'));
   }
 
+  onKeyPress(){
+    
+  }
+
   ngAfterViewInit() {
     fromEvent(this.el.nativeElement, 'mousedown').subscribe(() => {
       this.listening = true;
@@ -233,6 +237,14 @@ export class SpeechToTextComponent implements AfterViewInit {
       this.listening = false;
       this.stopSpeechRecognition();
     });
+    fromEvent(this.el.nativeElement, 'keydown').subscribe(() => {
+      this.listening = true;
+      this.startSpeechRecognition();
+    })
+    fromEvent(this.el.nativeElement, 'keyup').subscribe(() => {
+      this.listening = false;
+      this.stopSpeechRecognition();
+    })
   }
 }
 
