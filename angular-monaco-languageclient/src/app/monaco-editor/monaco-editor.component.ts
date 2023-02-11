@@ -114,7 +114,7 @@ export class MonacoEditorComponent implements OnInit {
   }
 
   clearText() {
-    console.log('Clearing value');
+    this.meditor.focus();
     this.meditor.executeEdits('', [{
       range: {
         startLineNumber: this.meditor.getPosition().lineNumber,
@@ -124,14 +124,18 @@ export class MonacoEditorComponent implements OnInit {
       },
       text: ''
     }]);
-
+    this.meditor.focus();
   }
 
   undoText() {
-    this.meditor?.trigger('undo', 'undo');
+    this.meditor.focus();
+    this.meditor.getModel().undo();
+    this.meditor.focus();
   }
   redoText() {
-    this.meditor?.trigger('redo', 'redo');
+    this.meditor.focus();
+    this.meditor.getModel().redo();
+    this.meditor.focus();
   }
 
   public createLanguageClient(connection: MessageConnection): MonacoLanguageClient {
