@@ -110,6 +110,22 @@ export class SpeechToTextComponent implements AfterViewInit {
     const numberPart = ans.numberPart;
     const textPart = ans.textPart
     console.log("CLEANUP VALUES: ", ans)
+
+    // CHECK FOR UNDO REDO CLEAR
+    if (this.percentageMatch(textPart, 'clear') > minMatch) {
+      this.clear.emit();
+      return;
+    }
+    if (this.percentageMatch(textPart, 'undo') > minMatch) {
+      this.undo.emit();
+      return;
+    }
+    if (this.percentageMatch(textPart, 'redo') > minMatch) {
+      this.redo.emit();
+      return;
+    }
+
+    // CHECK FOR POSITION CHANGING COMMANDS
     this.positionLibrary.forEach((txt) => {
       const matchpercent = this.percentageMatch(textPart, txt);
       console.log("MATCHED VALUES: ", matchpercent, txt, textPart)
@@ -119,26 +135,12 @@ export class SpeechToTextComponent implements AfterViewInit {
         matchFound = true
       }
     })
-    let clearText: boolean;
-    clearText = this.percentageMatch(textPart, 'clear') > minMatch;
-    let undo: boolean;
-    undo = this.percentageMatch(textPart, 'undo') > minMatch;
-    let redo: boolean;
-    redo = this.percentageMatch(textPart, 'redo') > minMatch;
     if (matchFound) {
       this.updatePosition.emit({ type: bestMatch, pos: parseInt(numberPart, 10) });
       return
-    } else if (clearText) {
-      console.log('Clearing text ', clearText);
-      this.clear.emit();
-      return;
-    } else if (undo) {
-      this.undo.emit();
-      return;
-    } else if (redo) {
-      this.redo.emit();
-      return;
     }
+
+    // CHECK FOR MULTI WORD COMMANDS
     minMatch = 70
     Object.keys(this.libraryMultiWord).forEach((txt) => {
       const matchpercent = this.percentageMatch(textPart, txt);
@@ -156,6 +158,8 @@ export class SpeechToTextComponent implements AfterViewInit {
       }
       return
     }
+
+    // CHECK FOR SINGLE WORD
     this.splitInputMatch(input)
   }
 
