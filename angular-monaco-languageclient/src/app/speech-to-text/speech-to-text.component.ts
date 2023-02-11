@@ -226,14 +226,14 @@ export class SpeechToTextComponent implements AfterViewInit {
 
   @HostListener('window:keydown', ['$event'])
   handleKeyDown(event: KeyboardEvent){
-    if(event.code === 'Space' && !this.listening){
+    if((event.code === 'AltLeft' || event.code === 'AltRight') && !this.listening){
       this.listening = true;
       this.startSpeechRecognition();
     }
   }
   @HostListener('window:keyup', ['$event'])
   handleKeyUp(event: KeyboardEvent){
-    if(event.code === 'Space' && this.listening){
+    if((event.code === 'AltLeft' || event.code === 'AltRight') && this.listening){
       this.listening = false;
       this.stopSpeechRecognition();
     }
