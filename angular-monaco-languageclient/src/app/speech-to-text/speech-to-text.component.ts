@@ -15,6 +15,9 @@ export class SpeechToTextComponent implements AfterViewInit {
   positionLibrary = ['go to line', 'next line', 'previous line', 'line end', 'left', 'right']
   @Output() sendTranscript = new EventEmitter<string>();
   @Output() updatePosition = new EventEmitter();
+  @Output() clear = new EventEmitter();
+  @Output() undo = new EventEmitter();
+  @Output() redo = new EventEmitter();
   @ViewChild('el', { static: false }) el: ElementRef;
 
   mouseDown$: Observable<any>;
@@ -90,9 +93,25 @@ export class SpeechToTextComponent implements AfterViewInit {
         matchFound = true
       }
     })
+    let clearText: boolean;
+    clearText = this.percentageMatch(textPart, 'clear') > minMatch;
+    let undo: boolean;
+    undo = this.percentageMatch(textPart, 'undo') > minMatch;
+    let redo: boolean;
+    redo = this.percentageMatch(textPart, 'redo') > minMatch;
     if (matchFound) {
       this.updatePosition.emit({ type: bestMatch, pos: parseInt(numberPart, 10) });
       return
+    } else if (clearText) {
+      console.log('Clearing text ', clearText);
+      this.clear.emit();
+      return;
+    } else if (undo) {
+      this.undo.emit();
+      return;
+    } else if (redo) {
+      this.redo.emit();
+      return;
     }
     Object.keys(this.libraryMultiWord).forEach((txt) => {
       const matchpercent = this.percentageMatch(textPart, txt);

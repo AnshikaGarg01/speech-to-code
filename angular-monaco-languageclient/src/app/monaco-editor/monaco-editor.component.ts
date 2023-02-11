@@ -1,9 +1,11 @@
-import { Component, OnInit } from '@angular/core';
-import { NgxEditorModel } from 'ngx-monaco-editor';
-import { listen, MessageConnection } from 'vscode-ws-jsonrpc';
-import { MonacoLanguageClient, CloseAction, ErrorAction, MonacoServices, createConnection } from 'monaco-languageclient';
+import {Component, OnInit} from '@angular/core';
+import {NgxEditorModel} from 'ngx-monaco-editor';
+import {listen, MessageConnection} from 'vscode-ws-jsonrpc';
+import {MonacoLanguageClient, CloseAction, ErrorAction, MonacoServices, createConnection} from 'monaco-languageclient';
+
 const ReconnectingWebSocket = require('reconnecting-websocket');
-import { URI } from 'vscode-uri';
+import {URI} from 'vscode-uri';
+
 @Component({
   selector: 'app-monaco-editor',
   templateUrl: './monaco-editor.component.html',
@@ -25,7 +27,9 @@ export class MonacoEditorComponent implements OnInit {
   };
   authToken = 'R3YKZFKBVi';
   meditor = null
-  constructor() { }
+
+  constructor() {
+  }
 
   ngOnInit() {
     setTimeout(() => {
@@ -41,11 +45,12 @@ export class MonacoEditorComponent implements OnInit {
   }
 
   setText(text: string) {
-    this.meditor.trigger('keyboard', 'type', { text: text });
+    this.meditor.trigger('keyboard', 'type', {text: text});
   }
+
   monacoOnInit(editor) {
     // install Monaco language client services
-    MonacoServices.install(editor, { rootUri: '/usr/src/codes' });
+    MonacoServices.install(editor, {rootUri: '/usr/src/codes'});
     this.meditor = editor
     // create the web socket
     // const url = this.createUrl();
@@ -102,10 +107,31 @@ export class MonacoEditorComponent implements OnInit {
     if (type === 'line end') {
       column = this.meditor.getModel(URI.file(`/usr/src/codes/${this.workspaceIndex}/Solution.cpp`)).getLineContent(lineNumber).length + 1;
     }
-    const position = { lineNumber: lineNumber, column: column };
+    const position = {lineNumber: lineNumber, column: column};
     console.log(this.meditor?.getPosition(), position)
     this.meditor.setPosition(position);
     this.meditor.focus();
+  }
+
+  clearText() {
+    console.log('Clearing value');
+    this.meditor.executeEdits('', [{
+      range: {
+        startLineNumber: this.meditor.getPosition().lineNumber,
+        startColumn: this.meditor.getPosition().column - 1,
+        endLineNumber: this.meditor.getPosition().lineNumber,
+        endColumn: this.meditor.getPosition().column
+      },
+      text: ''
+    }]);
+
+  }
+
+  undoText() {
+    this.meditor?.trigger('undo', 'undo');
+  }
+  redoText() {
+    this.meditor?.trigger('redo', 'redo');
   }
 
   public createLanguageClient(connection: MessageConnection): MonacoLanguageClient {
