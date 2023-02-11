@@ -75,7 +75,7 @@ export class SpeechToTextComponent implements AfterViewInit {
 
   getMatchingText(input) {
     let bestMatch = input
-    let minMatch = 70
+    let minMatch = 80
     let matchFound = false
     const ans = this.cleanupInput(input)
     const numberPart = ans.numberPart;
@@ -94,6 +94,7 @@ export class SpeechToTextComponent implements AfterViewInit {
       this.updatePosition.emit({ type: bestMatch, pos: parseInt(numberPart, 10) });
       return
     }
+    minMatch = 70
     Object.keys(this.libraryMultiWord).forEach((txt) => {
       const matchpercent = this.percentageMatch(textPart, txt);
       console.log("MATCHED VALUES: ", matchpercent, txt, textPart)
