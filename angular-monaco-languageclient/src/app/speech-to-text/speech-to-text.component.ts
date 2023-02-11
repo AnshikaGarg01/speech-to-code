@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, Input, EventEmitter, Output, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Input, EventEmitter, Output, ViewChild, HostListener } from '@angular/core';
 import { fromEvent, Observable } from "rxjs";
 import { delay, takeUntil, tap } from "rxjs/operators";
 
@@ -224,8 +224,19 @@ export class SpeechToTextComponent implements AfterViewInit {
     //   .subscribe(res => console.log('LONG CLICK'));
   }
 
-  onKeyPress(){
-    
+  @HostListener('window:keydown', ['$event'])
+  handleKeyDown(event: KeyboardEvent){
+    if(event.code === 'Space' && !this.listening){
+      this.listening = true;
+      this.startSpeechRecognition();
+    }
+  }
+  @HostListener('window:keyup', ['$event'])
+  handleKeyUp(event: KeyboardEvent){
+    if(event.code === 'Space' && this.listening){
+      this.listening = false;
+      this.stopSpeechRecognition();
+    }
   }
 
   ngAfterViewInit() {
@@ -237,14 +248,6 @@ export class SpeechToTextComponent implements AfterViewInit {
       this.listening = false;
       this.stopSpeechRecognition();
     });
-    fromEvent(this.el.nativeElement, 'keydown').subscribe(() => {
-      this.listening = true;
-      this.startSpeechRecognition();
-    })
-    fromEvent(this.el.nativeElement, 'keyup').subscribe(() => {
-      this.listening = false;
-      this.stopSpeechRecognition();
-    })
   }
 }
 
