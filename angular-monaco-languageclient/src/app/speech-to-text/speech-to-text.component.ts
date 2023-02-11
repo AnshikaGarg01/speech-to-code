@@ -1,18 +1,34 @@
-import { AfterViewInit, Component, ElementRef, Input, EventEmitter, Output, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  Input,
+  EventEmitter,
+  Output,
+  ViewChild,
+} from "@angular/core";
 import { fromEvent, Observable } from "rxjs";
 import { delay, takeUntil, tap } from "rxjs/operators";
 
 declare const webkitSpeechRecognition: any;
 
 @Component({
-  selector: 'app-speech-to-text',
-  templateUrl: './speech-to-text.component.html',
-  styleUrls: ['./speech-to-text.component.scss']
+  selector: "app-speech-to-text",
+  templateUrl: "./speech-to-text.component.html",
+  styleUrls: ["./speech-to-text.component.scss"],
 })
 export class SpeechToTextComponent implements AfterViewInit {
   recognition: any;
-  transcript = '';
-  positionLibrary = ['go to line', 'next line', 'previous line', 'line end', 'left', 'right']
+  transcript = "";
+  positionLibrary = [
+    "go to line",
+    "next line",
+    "previous line",
+    "line end",
+    "left",
+    "right",
+  ];
+  wordList = [];
   @Output() sendTranscript = new EventEmitter<string>();
   @Output() updatePosition = new EventEmitter();
   @Output() clear = new EventEmitter();
@@ -34,21 +50,9 @@ export class SpeechToTextComponent implements AfterViewInit {
     "less than": '<',
     "semi colon": ';',
   };
+
   librarySingleWord = {
-    "divide": '/',
-    "division": '/',
-    "multiplication": '*',
-    "into": '*',
-    "multiply": '*',
-    "add": '+',
-    "plus": '+',
-    "minus": '-',
-    "substract": '-',
-    "semicolon": ';',
-    'tab': '\t',
-    "equal": '=',
-    "equals": '=',
-    "colon": ':'
+    "integer": "int",
   }
 
   textToNumber = {
@@ -59,7 +63,70 @@ export class SpeechToTextComponent implements AfterViewInit {
     'five': 5,
   }
 
-  result = "";
+  operators = {
+    "not equals": '!=',
+    "not equal to": '!=',
+    "greater than equal to": '>',
+    "less than equal to": '<',
+    "greater than": '>',
+    "less than": '<',
+    "equals to": '=',
+    "equals": '=',
+    "equal to": '=',
+    "equal": '=',
+    "comma": ",",
+    "semi colon": ';',
+    "semicolon": ';',
+    "colon": ':',
+    "pipe": '|',
+    "ampersand": "&",
+    "and operator": '&&',
+    "or operator": '||',
+    "not operator": '!',
+    "hyphen": '-',
+    "divide": '/',
+    "division": '/',
+    "multiplication": '*',
+    "into": '*',
+    "multiply": '*',
+    "add": '+',
+    "plus": '+',
+    "minus": '-',
+    "substract": '-',
+  }
+
+  codeSnippets = {
+    "if": {
+      code: "if(){\n",
+      action: () => {
+        this.updatePosition.emit({
+          type: "previous line",
+        });
+        this.updatePosition.emit({
+          type: "line end",
+        });
+        this.updatePosition.emit({
+          type: "left",
+          pos: 2
+        });
+      },
+    },
+    "for": {
+      code: "for(){\n",
+      action: () => {
+        this.updatePosition.emit({
+          type: "previous line",
+        });
+        this.updatePosition.emit({
+          type: "line end",
+        });
+        this.updatePosition.emit({
+          type: "left",
+          pos: 2
+        });
+      },
+    },
+  };
 
   constructor() {
     this.recognition = new webkitSpeechRecognition();
@@ -71,10 +138,12 @@ export class SpeechToTextComponent implements AfterViewInit {
         if (event.results[i].isFinal) {
           let input = event.results[i][0].transcript.toLowerCase()
           input = input.replace(/(\.|\?|,)/g, ' ');
-          input = this.directionCleanup(input)
+          input = this.directionCleanup(input);
+          input = this.replaceOperators(input)
           this.getMatchingText(input);
         }
       }
+      console.log("List", this.wordList);
     };
   }
 
@@ -99,6 +168,13 @@ export class SpeechToTextComponent implements AfterViewInit {
         input = input.replaceAll(txt, this.textToNumber[txt])
       })
     }
+    return input
+  }
+
+  replaceOperators(input) {
+    Object.keys(this.operators).forEach((op) => {
+      input = input.replace(op, this.operators[op]);
+    })
     return input
   }
 
@@ -128,35 +204,42 @@ export class SpeechToTextComponent implements AfterViewInit {
     // CHECK FOR POSITION CHANGING COMMANDS
     this.positionLibrary.forEach((txt) => {
       const matchpercent = this.percentageMatch(textPart, txt);
-      console.log("MATCHED VALUES: ", matchpercent, txt, textPart)
+      console.log("MATCHED VALUES: ", matchpercent, txt, textPart);
       if (matchpercent > minMatch) {
         minMatch = matchpercent;
-        bestMatch = txt
-        matchFound = true
+        bestMatch = txt;
+        matchFound = true;
       }
-    })
+    });
     if (matchFound) {
-      this.updatePosition.emit({ type: bestMatch, pos: parseInt(numberPart, 10) });
-      return
+      this.updatePosition.emit({
+        type: bestMatch,
+        pos: parseInt(numberPart, 10),
+      });
+      return;
+    }
+
+    if (this.codeSnippetsMatch(input)) {
+      return;
     }
 
     // CHECK FOR MULTI WORD COMMANDS
     minMatch = 70
     Object.keys(this.libraryMultiWord).forEach((txt) => {
       const matchpercent = this.percentageMatch(textPart, txt);
-      console.log("MATCHED VALUES: ", matchpercent, txt, textPart)
+      console.log("MATCHED VALUES: ", matchpercent, txt, textPart);
       if (matchpercent > minMatch) {
         minMatch = matchpercent;
-        bestMatch = txt
-        matchFound = true
+        bestMatch = txt;
+        matchFound = true;
       }
-    })
+    });
     if (matchFound) {
       this.sendTranscript.emit(this.libraryMultiWord[bestMatch]);
-      if (bestMatch.indexOf('bracket') > -1) {
-        this.updatePosition.emit({ type: 'left', pos: 1 })
+      if (bestMatch.indexOf("bracket") > -1) {
+        this.updatePosition.emit({ type: "left", pos: 1 });
       }
-      return
+      return;
     }
 
     // CHECK FOR SINGLE WORD
@@ -166,35 +249,49 @@ export class SpeechToTextComponent implements AfterViewInit {
   splitInputMatch(input) {
     let words = input.trim().split(" ");
     for (let i = 0; i < words.length; i++) {
-      let textPart = words[i]
+      let textPart = words[i].trim();
       if (!!this.librarySingleWord[input]) {
         this.sendTranscript.emit(this.librarySingleWord[input]);
-        continue
+        continue;
       }
-      let bestMatch = textPart
-      let minMatch = 70
-      let matchFound = false
+      let bestMatch = textPart;
+      let minMatch = 70;
+      let matchFound = false;
       Object.keys(this.librarySingleWord).forEach((txt) => {
         const matchpercent = this.percentageMatch(textPart, txt);
-        console.log("MATCHED VALUES: ", matchpercent, txt, '|', textPart)
+        console.log("MATCHED VALUES: ", matchpercent, txt, "|", textPart);
         if (matchpercent > minMatch) {
           minMatch = matchpercent;
-          bestMatch = txt
-          matchFound = true
+          bestMatch = txt;
+          matchFound = true;
         }
-      })
+      });
       if (matchFound) {
         this.librarySingleWord[textPart] = this.librarySingleWord[bestMatch]
-        this.sendTranscript.emit(this.librarySingleWord[bestMatch] + ' ');
-        continue
+        this.sendTranscript.emit(this.librarySingleWord[bestMatch]);
+      } else {
+        this.sendTranscript.emit(bestMatch);
       }
-      this.sendTranscript.emit(bestMatch + ' ');
+      if (i < words.length - 1) {
+        this.sendTranscript.emit(' ');
+      }
     }
   }
 
-  private percentageMatch(str1 = '', str2 = '') {
-    const track = Array(str2.length + 1).fill(null).map(() =>
-      Array(str1.length + 1).fill(null));
+  codeSnippetsMatch(transcript) {
+    console.log("----", transcript);
+    transcript = transcript.trim()
+    if (!!this.codeSnippets[transcript]) {
+      this.sendTranscript.emit(this.codeSnippets[transcript].code);
+      this.codeSnippets[transcript].action()
+      return true
+    }
+  }
+
+  private percentageMatch(str1 = "", str2 = "") {
+    const track = Array(str2.length + 1)
+      .fill(null)
+      .map(() => Array(str1.length + 1).fill(null));
     for (let i = 0; i <= str1.length; i += 1) {
       track[0][i] = i;
     }
@@ -207,14 +304,14 @@ export class SpeechToTextComponent implements AfterViewInit {
         track[j][i] = Math.min(
           track[j][i - 1] + 1, // deletion
           track[j - 1][i] + 1, // insertion
-          track[j - 1][i - 1] + indicator, // substitution
+          track[j - 1][i - 1] + indicator // substitution
         );
       }
     }
     const distance = track[str2.length][str1.length];
-    const bigger = Math.max(str1.length, str2.length)
-    return (bigger - distance) * 100 / bigger
-  };
+    const bigger = Math.max(str1.length, str2.length);
+    return ((bigger - distance) * 100) / bigger;
+  }
 
   onClick() {
     // this.mouseDown$.pipe(
@@ -225,14 +322,13 @@ export class SpeechToTextComponent implements AfterViewInit {
   }
 
   ngAfterViewInit() {
-    fromEvent(this.el.nativeElement, 'mousedown').subscribe(() => {
+    fromEvent(this.el.nativeElement, "mousedown").subscribe(() => {
       this.listening = true;
       this.startSpeechRecognition();
     });
-    fromEvent(this.el.nativeElement, 'mouseup').subscribe(() => {
+    fromEvent(this.el.nativeElement, "mouseup").subscribe(() => {
       this.listening = false;
       this.stopSpeechRecognition();
     });
   }
 }
-
