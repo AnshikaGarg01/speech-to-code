@@ -11,30 +11,30 @@ import { URI } from 'vscode-uri';
 })
 export class MonacoEditorComponent implements OnInit {
 
-  languageId = 'python';
+  languageId = 'cpp';
   translatedText: string;
   editorOptions = {
-    theme: 'vs-dark'
+    theme: 'vs-dark',
+    tabSize: 2
   }
   workspaceIndex = Math.round(Math.random() * 1000);
   model: NgxEditorModel = {
     value: this.getCode(),
     language: this.languageId,
-    uri: URI.file(`/usr/src/codes/${this.workspaceIndex}/Solution.py`)
+    uri: URI.file(`/usr/src/codes/${this.workspaceIndex}/Solution.cpp`)
   };
   authToken = 'R3YKZFKBVi';
   meditor = null
-  cursorPosition = 0;
   constructor() { }
 
   ngOnInit() {
     setTimeout(() => {
-      const modelUri = URI.file(`/usr/src/codes/${this.workspaceIndex}/Solution.py`)
+      const modelUri = URI.file(`/usr/src/codes/${this.workspaceIndex}/Solution.cpp`)
       this.meditor.getModel(modelUri)?.dispose();
       const model = monaco.editor.createModel(
         this.getCode(),
         this.languageId,
-        URI.file(`/usr/src/codes/${this.workspaceIndex}/Solution.py`)
+        URI.file(`/usr/src/codes/${this.workspaceIndex}/Solution.cpp`)
       )
       this.meditor.setModel(model)
     }, 1000);
@@ -79,15 +79,30 @@ export class MonacoEditorComponent implements OnInit {
   setPosition(data) {
     const type = data.type
     const pos = data.pos
-    this.cursorPosition = this.meditor?.getPosition().lineNumber
+    let lineNumber = this.meditor?.getPosition().lineNumber
+    let column = this.meditor?.getPosition().column
     console.log("SETTING POSITION: ", data)
     if (type === 'go to line') {
-      this.cursorPosition = pos;
+      lineNumber = pos;
+      column = 0;
     }
     if (type === 'next line') {
-      this.cursorPosition++;
+      lineNumber++;
+      column = 0;
     }
-    const position = { lineNumber: this.cursorPosition, column: 1 };
+    if (type === 'previous line') {
+      lineNumber--;
+    }
+    if (type === 'left') {
+      column--;
+    }
+    if (type === 'right') {
+      column++;
+    }
+    if (type === 'line end') {
+      column = this.meditor.getModel(URI.file(`/usr/src/codes/${this.workspaceIndex}/Solution.cpp`)).getLineContent(lineNumber).length + 1;
+    }
+    const position = { lineNumber: lineNumber, column: column };
     console.log(this.meditor?.getPosition(), position)
     this.meditor.setPosition(position);
     this.meditor.focus();
@@ -132,7 +147,10 @@ export class MonacoEditorComponent implements OnInit {
   }
 
   getCode() {
-    return ``;
+    return `int longestUnivaluePath(BinaryTreeNode<int> *root) {
+  // Write yout code here
+  // return maximum Longest Path Value
+}`;
   }
 
 }

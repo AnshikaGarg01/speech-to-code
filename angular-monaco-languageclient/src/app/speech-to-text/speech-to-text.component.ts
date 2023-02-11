@@ -12,7 +12,7 @@ declare const webkitSpeechRecognition: any;
 export class SpeechToTextComponent implements AfterViewInit {
   recognition: any;
   transcript = '';
-  positionLibrary = ['go to line', 'next line']
+  positionLibrary = ['go to line', 'next line', 'previous line', 'line end', 'left', 'right']
   @Output() sendTranscript = new EventEmitter<string>();
   @Output() updatePosition = new EventEmitter();
   @ViewChild('el', { static: false }) el: ElementRef;
@@ -20,11 +20,14 @@ export class SpeechToTextComponent implements AfterViewInit {
   mouseDown$: Observable<any>;
   mouseUp$: Observable<any>;
   listening = false;
-  library = {
+  libraryMultiWord = {
     "small bracket": "()",
     "curly bracket": "{}",
     "square bracket": '[]',
-    "angular bracket": '<>',
+    "angle bracket": '<>',
+    "new line": '\n'
+  };
+  librarySingleWord = {
     "divide": '/',
     "division": '/',
     "multiplication": '*',
@@ -34,7 +37,9 @@ export class SpeechToTextComponent implements AfterViewInit {
     "plus": '+',
     "minus": '-',
     "substract": '-',
-  };
+    "semicolon": ':',
+    'tab': '\t'
+  }
   result = "";
 
   constructor() {
@@ -45,7 +50,8 @@ export class SpeechToTextComponent implements AfterViewInit {
     this.recognition.onresult = (event) => {
       for (let i = event.resultIndex; i < event.results.length; i++) {
         if (event.results[i].isFinal) {
-          const input = event.results[i][0].transcript.toLowerCase()
+          let input = event.results[i][0].transcript.toLowerCase()
+          input = input.replace(/(\.|\?|,)/g, ' ');
           this.getMatchingText(input);
         }
       }
@@ -88,10 +94,7 @@ export class SpeechToTextComponent implements AfterViewInit {
       this.updatePosition.emit({ type: bestMatch, pos: parseInt(numberPart, 10) });
       return
     }
-    if (!!this.library[input]) {
-      this.sendTranscript.emit(bestMatch);
-    }
-    Object.keys(this.library).forEach((txt) => {
+    Object.keys(this.libraryMultiWord).forEach((txt) => {
       const matchpercent = this.percentageMatch(textPart, txt);
       console.log("MATCHED VALUES: ", matchpercent, txt, textPart)
       if (matchpercent > minMatch) {
@@ -101,11 +104,42 @@ export class SpeechToTextComponent implements AfterViewInit {
       }
     })
     if (matchFound) {
-      this.library[input] = this.library[bestMatch];
-      this.sendTranscript.emit(this.library[bestMatch]);
+      this.sendTranscript.emit(this.libraryMultiWord[bestMatch]);
+      if (bestMatch.indexOf('bracket') > -1) {
+        this.updatePosition.emit({ type: 'left', pos: 1 })
+      }
       return
     }
-    this.sendTranscript.emit(bestMatch);
+    this.splitInputMatch(input)
+  }
+
+  splitInputMatch(input) {
+    let words = input.trim().split(" ");
+    for (let i = 0; i < words.length; i++) {
+      let textPart = words[i]
+      if (!!this.librarySingleWord[input]) {
+        this.sendTranscript.emit(this.librarySingleWord[input]);
+        continue
+      }
+      let bestMatch = textPart
+      let minMatch = 70
+      let matchFound = false
+      Object.keys(this.librarySingleWord).forEach((txt) => {
+        const matchpercent = this.percentageMatch(textPart, txt);
+        console.log("MATCHED VALUES: ", matchpercent, txt, '|', textPart)
+        if (matchpercent > minMatch) {
+          minMatch = matchpercent;
+          bestMatch = txt
+          matchFound = true
+        }
+      })
+      if (matchFound) {
+        this.librarySingleWord[textPart] = this.librarySingleWord[bestMatch]
+        this.sendTranscript.emit(this.librarySingleWord[bestMatch]);
+        continue
+      }
+      this.sendTranscript.emit(bestMatch);
+    }
   }
 
   private percentageMatch(str1 = '', str2 = '') {
@@ -133,12 +167,13 @@ export class SpeechToTextComponent implements AfterViewInit {
   };
 
   onClick() {
-    this.mouseDown$.pipe(
-      delay(40000),
-      takeUntil(this.mouseUp$)
-    )
-      .subscribe(res => console.log('LONG CLICK'));
+    // this.mouseDown$.pipe(
+    //   delay(40000),
+    //   takeUntil(this.mouseUp$)
+    // )
+    //   .subscribe(res => console.log('LONG CLICK'));
   }
+
   ngAfterViewInit() {
     fromEvent(this.el.nativeElement, 'mousedown').subscribe(() => {
       this.listening = true;
