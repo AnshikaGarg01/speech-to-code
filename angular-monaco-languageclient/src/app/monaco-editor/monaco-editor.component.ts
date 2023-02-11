@@ -99,10 +99,10 @@ export class MonacoEditorComponent implements OnInit {
       lineNumber--;
     }
     if (type === 'left') {
-      column--;
+      column = isNaN(column) ? column - 1 : column - pos
     }
     if (type === 'right') {
-      column++;
+      column = isNaN(column) ? column + 1 : column + pos
     }
     if (type === 'line end') {
       column = this.meditor.getModel(URI.file(`/usr/src/codes/${this.workspaceIndex}/Solution.cpp`)).getLineContent(lineNumber).length + 1;
@@ -110,6 +110,7 @@ export class MonacoEditorComponent implements OnInit {
     const position = {lineNumber: lineNumber, column: column};
     console.log(this.meditor?.getPosition(), position)
     this.meditor.setPosition(position);
+    this.meditor.focus();
     this.meditor.focus();
   }
 

@@ -28,7 +28,11 @@ export class SpeechToTextComponent implements AfterViewInit {
     "curly bracket": "{}",
     "square bracket": '[]',
     "angle bracket": '<>',
-    "new line": '\n'
+    "new line": '\n',
+    "not equals": '!=',
+    "greater than": '>',
+    "less than": '<',
+    "semi colon": ';',
   };
   librarySingleWord = {
     "divide": '/',
@@ -40,8 +44,11 @@ export class SpeechToTextComponent implements AfterViewInit {
     "plus": '+',
     "minus": '-',
     "substract": '-',
-    "semicolon": ':',
-    'tab': '\t'
+    "semicolon": ';',
+    'tab': '\t',
+    "equal": '=',
+    "equals": '=',
+    "colon": ':'
   }
 
   textToNumber = {
@@ -49,7 +56,7 @@ export class SpeechToTextComponent implements AfterViewInit {
     'two': 2,
     'three': 3,
     'four': 4,
-    'five': 5
+    'five': 5,
   }
 
   result = "";
@@ -64,6 +71,7 @@ export class SpeechToTextComponent implements AfterViewInit {
         if (event.results[i].isFinal) {
           let input = event.results[i][0].transcript.toLowerCase()
           input = input.replace(/(\.|\?|,)/g, ' ');
+          input = this.directionCleanup(input)
           this.getMatchingText(input);
         }
       }
@@ -80,17 +88,18 @@ export class SpeechToTextComponent implements AfterViewInit {
 
   cleanupInput(input) {
     console.log("INPUT VALUES: ", input)
-    const numberPart = input.match(/\d+/) == null ? null : input.match(/\d+/)[0]
-    const textPart = input.replace(/[0-9]/g, '');
+    const numberPart = input.match(/\d+/) == null ? 1 : input.match(/\d+/)[0]
+    const textPart = input.replace(/[0-9]/g, '').trim();
     return { numberPart, textPart }
   }
 
   directionCleanup(input) {
-    if (input.indexOf('right') > -1 || input.indexOf('left') > -1) {
+    if (input.indexOf('right') > -1 || input.indexOf('left') > -1 || input.indexOf('go to line')) {
       Object.keys(this.textToNumber).forEach((txt) => {
-
+        input = input.replaceAll(txt, this.textToNumber[txt])
       })
     }
+    return input
   }
 
   getMatchingText(input) {
