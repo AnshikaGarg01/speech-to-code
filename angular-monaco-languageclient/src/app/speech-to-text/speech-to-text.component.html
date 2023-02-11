@@ -1,2 +1,6 @@
-<button #el (click)="onClick()">Start speaking</button>
-<h5 *ngIf="listening">Listening</h5>
+<div class="container">
+  <button id="speech" class="btn type2" #el (click)="onClick()">
+    <div [ngClass]="{'pulse-ring': listening}"></div>
+    <i class="fa fa-microphone" aria-hidden="true"></i>
+  </button>
+</div>
