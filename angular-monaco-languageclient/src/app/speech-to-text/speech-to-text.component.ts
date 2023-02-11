@@ -84,7 +84,7 @@ export class SpeechToTextComponent implements AfterViewInit {
   }
 
   directionCleanup(input) {
-    if (input.indexOf('right') > -1 || input.indexOf('left') > -1) {
+    if (input.indexOf('right') > -1 || input.indexOf('left') > -1 || input.indexOf('go to line')) {
       Object.keys(this.textToNumber).forEach((txt) => {
         input = input.replaceAll(txt, this.textToNumber[txt])
       })
