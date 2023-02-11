@@ -61,6 +61,7 @@ export class SpeechToTextComponent implements AfterViewInit {
         if (event.results[i].isFinal) {
           let input = event.results[i][0].transcript.toLowerCase()
           input = input.replace(/(\.|\?|,)/g, ' ');
+          input = this.directionCleanup(input)
           this.getMatchingText(input);
         }
       }
@@ -77,17 +78,18 @@ export class SpeechToTextComponent implements AfterViewInit {
 
   cleanupInput(input) {
     console.log("INPUT VALUES: ", input)
-    const numberPart = input.match(/\d+/) == null ? null : input.match(/\d+/)[0]
-    const textPart = input.replace(/[0-9]/g, '');
+    const numberPart = input.match(/\d+/) == null ? 1 : input.match(/\d+/)[0]
+    const textPart = input.replace(/[0-9]/g, '').trim();
     return { numberPart, textPart }
   }
 
   directionCleanup(input) {
     if (input.indexOf('right') > -1 || input.indexOf('left') > -1) {
       Object.keys(this.textToNumber).forEach((txt) => {
-
+        input = input.replaceAll(txt, this.textToNumber[txt])
       })
     }
+    return input
   }
 
   getMatchingText(input) {
