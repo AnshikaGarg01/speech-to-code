@@ -43,6 +43,15 @@ export class SpeechToTextComponent implements AfterViewInit {
     "semicolon": ':',
     'tab': '\t'
   }
+
+  textToNumber = {
+    'one': 1,
+    'two': 2,
+    'three': 3,
+    'four': 4,
+    'five': 5
+  }
+
   result = "";
 
   constructor() {
@@ -76,9 +85,17 @@ export class SpeechToTextComponent implements AfterViewInit {
     return { numberPart, textPart }
   }
 
+  directionCleanup(input) {
+    if (input.indexOf('right') > -1 || input.indexOf('left') > -1) {
+      Object.keys(this.textToNumber).forEach((txt) => {
+
+      })
+    }
+  }
+
   getMatchingText(input) {
     let bestMatch = input
-    let minMatch = 70
+    let minMatch = 80
     let matchFound = false
     const ans = this.cleanupInput(input)
     const numberPart = ans.numberPart;
@@ -113,6 +130,7 @@ export class SpeechToTextComponent implements AfterViewInit {
       this.redo.emit();
       return;
     }
+    minMatch = 70
     Object.keys(this.libraryMultiWord).forEach((txt) => {
       const matchpercent = this.percentageMatch(textPart, txt);
       console.log("MATCHED VALUES: ", matchpercent, txt, textPart)
@@ -154,10 +172,10 @@ export class SpeechToTextComponent implements AfterViewInit {
       })
       if (matchFound) {
         this.librarySingleWord[textPart] = this.librarySingleWord[bestMatch]
-        this.sendTranscript.emit(this.librarySingleWord[bestMatch]);
+        this.sendTranscript.emit(this.librarySingleWord[bestMatch] + ' ');
         continue
       }
-      this.sendTranscript.emit(bestMatch);
+      this.sendTranscript.emit(bestMatch + ' ');
     }
   }
 
